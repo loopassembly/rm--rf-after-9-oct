@@ -1,1 +1,1038 @@
-im
+#array implementation of list----------------------
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct {
+    int *array;
+    int size;
+    int capacity;
+} List;
+
+List* createList(int capacity) {
+    List *list = (List*)malloc(sizeof(List));
+    list->capacity = capacity;
+    list->size = 0;
+    list->array = (int*)malloc(capacity * sizeof(int));
+    return list;
+}
+
+void resizeList(List *list) {
+    list->capacity *= 2;
+    list->array = (int*)realloc(list->array, list->capacity * sizeof(int));
+}
+
+void add(List *list, int value) {
+    if (list->size == list->capacity) {
+        resizeList(list);
+    }
+    list->array[list->size++] = value;
+}
+
+int get(List *list, int index) {
+    if (index >= 0 && index < list->size) {
+        return list->array[index];
+    }
+    return -1;
+}
+
+void delete(List *list, int index) {
+    if (index >= 0 && index < list->size) {
+        for (int i = index; i < list->size - 1; i++) {
+            list->array[i] = list->array[i + 1];
+        }
+        list->size--;
+    }
+}
+
+void freeList(List *list) {
+    free(list->array);
+    free(list);
+}
+
+int main() {
+    List *list = createList(2);
+    int n, value;
+
+    printf("Enter the number of elements to add: ");
+    scanf("%d", &n);
+    
+    for (int i = 0; i < n; i++) {
+        printf("Enter element %d: ", i + 1);
+        scanf("%d", &value);
+        add(list, value);
+    }
+
+    printf("Elements in the list:\n");
+    for (int i = 0; i < list->size; i++) {
+        printf("%d ", get(list, i));
+    }
+    printf("\n");
+
+    printf("Enter the index to delete: ");
+    int index;
+    scanf("%d", &index);
+    delete(list, index);
+
+    printf("Elements after deletion:\n");
+    for (int i = 0; i < list->size; i++) {
+        printf("%d ", get(list, i));
+    }
+    printf("\n");
+
+    freeList(list);
+    return 0;
+}
+
+
+#implementation of linklist------------------
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct Node {
+    int data;
+    struct Node* next;
+} Node;
+
+typedef struct LinkedList {
+    Node* head;
+} LinkedList;
+
+LinkedList* createList() {
+    LinkedList* list = (LinkedList*)malloc(sizeof(LinkedList));
+    list->head = NULL;
+    return list;
+}
+
+void add(LinkedList* list, int value) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->data = value;
+    newNode->next = list->head;
+    list->head = newNode;
+}
+
+void display(LinkedList* list) {
+    Node* current = list->head;
+    while (current != NULL) {
+        printf("%d ", current->data);
+        current = current->next;
+    }
+    printf("\n");
+}
+
+void deleteNode(LinkedList* list, int index) {
+    if (list->head == NULL) return;
+    Node* current = list->head;
+    if (index == 0) {
+        list->head = current->next;
+        free(current);
+        return;
+    }
+    for (int i = 0; current != NULL && i < index - 1; i++) {
+        current = current->next;
+    }
+    if (current == NULL || current->next == NULL) return;
+    Node* nextNode = current->next->next;
+    free(current->next);
+    current->next = nextNode;
+}
+
+void freeList(LinkedList* list) {
+    Node* current = list->head;
+    while (current != NULL) {
+        Node* next = current->next;
+        free(current);
+        current = next;
+    }
+    free(list);
+}
+
+int main() {
+    LinkedList* list = createList();
+    int n, value;
+
+    printf("Enter the number of elements to add: ");
+    scanf("%d", &n);
+    
+    for (int i = 0; i < n; i++) {
+        printf("Enter element %d: ", i + 1);
+        scanf("%d", &value);
+        add(list, value);
+    }
+
+    printf("Elements in the list: ");
+    display(list);
+
+    printf("Enter the index to delete: ");
+    int index;
+    scanf("%d", &index);
+    deleteNode(list, index);
+
+    printf("Elements after deletion: ");
+    display(list);
+
+    freeList(list);
+    return 0;
+}
+
+
+#implementation od doubly linklist ------------
+
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct Node {
+    int data;
+    struct Node* next;
+    struct Node* prev;
+} Node;
+
+typedef struct DoublyLinkedList {
+    Node* head;
+} DoublyLinkedList;
+
+DoublyLinkedList* createList() {
+    DoublyLinkedList* list = (DoublyLinkedList*)malloc(sizeof(DoublyLinkedList));
+    list->head = NULL;
+    return list;
+}
+
+void add(DoublyLinkedList* list, int value) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->data = value;
+    newNode->next = list->head;
+    newNode->prev = NULL;
+    if (list->head != NULL) {
+        list->head->prev = newNode;
+    }
+    list->head = newNode;
+}
+
+void display(DoublyLinkedList* list) {
+    Node* current = list->head;
+    while (current != NULL) {
+        printf("%d ", current->data);
+        current = current->next;
+    }
+    printf("\n");
+}
+
+void deleteNode(DoublyLinkedList* list, int index) {
+    if (list->head == NULL) return;
+    Node* current = list->head;
+    if (index == 0) {
+        list->head = current->next;
+        if (list->head != NULL) {
+            list->head->prev = NULL;
+        }
+        free(current);
+        return;
+    }
+    for (int i = 0; current != NULL && i < index; i++) {
+        current = current->next;
+    }
+    if (current == NULL) return;
+    if (current->next != NULL) {
+        current->next->prev = current->prev;
+    }
+    if (current->prev != NULL) {
+        current->prev->next = current->next;
+    }
+    free(current);
+}
+
+void freeList(DoublyLinkedList* list) {
+    Node* current = list->head;
+    while (current != NULL) {
+        Node* next = current->next;
+        free(current);
+        current = next;
+    }
+    free(list);
+}
+
+int main() {
+    DoublyLinkedList* list = createList();
+    int n, value;
+
+    printf("Enter the number of elements to add: ");
+    scanf("%d", &n);
+    
+    for (int i = 0; i < n; i++) {
+        printf("Enter element %d: ", i + 1);
+        scanf("%d", &value);
+        add(list, value);
+    }
+
+    printf("Elements in the list: ");
+    display(list);
+
+    printf("Enter the index to delete: ");
+    int index;
+    scanf("%d", &index);
+    deleteNode(list, index);
+
+    printf("Elements after deletion: ");
+    display(list);
+
+    freeList(list);
+    return 0;
+}
+
+
+
+#implementation os stack using array
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX 100
+
+typedef struct Stack {
+    int top;
+    int items[MAX];
+} Stack;
+
+Stack* createStack() {
+    Stack* stack = (Stack*)malloc(sizeof(Stack));
+    stack->top = -1;
+    return stack;
+}
+
+int isFull(Stack* stack) {
+    return stack->top == MAX - 1;
+}
+
+int isEmpty(Stack* stack) {
+    return stack->top == -1;
+}
+
+void push(Stack* stack, int value) {
+    if (!isFull(stack)) {
+        stack->items[++stack->top] = value;
+    } else {
+        printf("Stack Overflow\n");
+    }
+}
+
+int pop(Stack* stack) {
+    if (!isEmpty(stack)) {
+        return stack->items[stack->top--];
+    } else {
+        printf("Stack Underflow\n");
+        return -1;
+    }
+}
+
+void display(Stack* stack) {
+    if (isEmpty(stack)) {
+        printf("Stack is empty\n");
+        return;
+    }
+    for (int i = stack->top; i >= 0; i--) {
+        printf("%d\n", stack->items[i]);
+    }
+}
+
+void freeStack(Stack* stack) {
+    free(stack);
+}
+
+int main() {
+    Stack* stack = createStack();
+    int choice, value;
+
+    while (1) {
+        printf("1. Push\n2. Pop\n3. Display\n4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter value to push: ");
+                scanf("%d", &value);
+                push(stack, value);
+                break;
+            case 2:
+                value = pop(stack);
+                if (value != -1) {
+                    printf("Popped value: %d\n", value);
+                }
+                break;
+            case 3:
+                printf("Stack elements:\n");
+                display(stack);
+                break;
+            case 4:
+                freeStack(stack);
+                return 0;
+            default:
+                printf("Invalid choice\n");
+        }
+    }
+}
+
+
+#implementation os stack using linklist
+
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct Node {
+    int data;
+    struct Node* next;
+} Node;
+
+typedef struct Stack {
+    Node* top;
+} Stack;
+
+Stack* createStack() {
+    Stack* stack = (Stack*)malloc(sizeof(Stack));
+    stack->top = NULL;
+    return stack;
+}
+
+int isEmpty(Stack* stack) {
+    return stack->top == NULL;
+}
+
+void push(Stack* stack, int value) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->data = value;
+    newNode->next = stack->top;
+    stack->top = newNode;
+}
+
+int pop(Stack* stack) {
+    if (isEmpty(stack)) {
+        printf("Stack Underflow\n");
+        return -1;
+    }
+    Node* temp = stack->top;
+    int poppedValue = temp->data;
+    stack->top = stack->top->next;
+    free(temp);
+    return poppedValue;
+}
+
+void display(Stack* stack) {
+    if (isEmpty(stack)) {
+        printf("Stack is empty\n");
+        return;
+    }
+    Node* current = stack->top;
+    while (current != NULL) {
+        printf("%d\n", current->data);
+        current = current->next;
+    }
+}
+
+void freeStack(Stack* stack) {
+    while (!isEmpty(stack)) {
+        pop(stack);
+    }
+    free(stack);
+}
+
+int main() {
+    Stack* stack = createStack();
+    int choice, value;
+
+    while (1) {
+        printf("1. Push\n2. Pop\n3. Display\n4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter value to push: ");
+                scanf("%d", &value);
+                push(stack, value);
+                break;
+            case 2:
+                value = pop(stack);
+                if (value != -1) {
+                    printf("Popped value: %d\n", value);
+                }
+                break;
+            case 3:
+                printf("Stack elements:\n");
+                display(stack);
+                break;
+            case 4:
+                freeStack(stack);
+                return 0;
+            default:
+                printf("Invalid choice\n");
+        }
+    }
+}
+
+
+#implemention of queuq using array
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX 100
+
+typedef struct Queue {
+    int front;
+    int rear;
+    int items[MAX];
+} Queue;
+
+Queue* createQueue() {
+    Queue* queue = (Queue*)malloc(sizeof(Queue));
+    queue->front = -1;
+    queue->rear = -1;
+    return queue;
+}
+
+int isFull(Queue* queue) {
+    return (queue->rear + 1) % MAX == queue->front;
+}
+
+int isEmpty(Queue* queue) {
+    return queue->front == -1;
+}
+
+void enqueue(Queue* queue, int value) {
+    if (!isFull(queue)) {
+        if (queue->front == -1) {
+            queue->front = 0;
+        }
+        queue->rear = (queue->rear + 1) % MAX;
+        queue->items[queue->rear] = value;
+    } else {
+        printf("Queue Overflow\n");
+    }
+}
+
+int dequeue(Queue* queue) {
+    if (!isEmpty(queue)) {
+        int value = queue->items[queue->front];
+        if (queue->front == queue->rear) {
+            queue->front = queue->rear = -1;
+        } else {
+            queue->front = (queue->front + 1) % MAX;
+        }
+        return value;
+    } else {
+        printf("Queue Underflow\n");
+        return -1;
+    }
+}
+
+void display(Queue* queue) {
+    if (isEmpty(queue)) {
+        printf("Queue is empty\n");
+        return;
+    }
+    int i = queue->front;
+    while (1) {
+        printf("%d ", queue->items[i]);
+        if (i == queue->rear) break;
+        i = (i + 1) % MAX;
+    }
+    printf("\n");
+}
+
+void freeQueue(Queue* queue) {
+    free(queue);
+}
+
+int main() {
+    Queue* queue = createQueue();
+    int choice, value;
+
+    while (1) {
+        printf("1. Enqueue\n2. Dequeue\n3. Display\n4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter value to enqueue: ");
+                scanf("%d", &value);
+                enqueue(queue, value);
+                break;
+            case 2:
+                value = dequeue(queue);
+                if (value != -1) {
+                    printf("Dequeued value: %d\n", value);
+                }
+                break;
+            case 3:
+                printf("Queue elements: ");
+                display(queue);
+                break;
+            case 4:
+                freeQueue(queue);
+                return 0;
+            default:
+                printf("Invalid choice\n");
+        }
+    }
+}
+
+
+#implementation os queue using linklist
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct Node {
+    int data;
+    struct Node* next;
+} Node;
+
+typedef struct Queue {
+    Node* front;
+    Node* rear;
+} Queue;
+
+Queue* createQueue() {
+    Queue* queue = (Queue*)malloc(sizeof(Queue));
+    queue->front = NULL;
+    queue->rear = NULL;
+    return queue;
+}
+
+int isEmpty(Queue* queue) {
+    return queue->front == NULL;
+}
+
+void enqueue(Queue* queue, int value) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->data = value;
+    newNode->next = NULL;
+    if (queue->rear != NULL) {
+        queue->rear->next = newNode;
+    }
+    queue->rear = newNode;
+    if (queue->front == NULL) {
+        queue->front = newNode;
+    }
+}
+
+int dequeue(Queue* queue) {
+    if (isEmpty(queue)) {
+        printf("Queue Underflow\n");
+        return -1;
+    }
+    Node* temp = queue->front;
+    int value = temp->data;
+    queue->front = queue->front->next;
+    if (queue->front == NULL) {
+        queue->rear = NULL;
+    }
+    free(temp);
+    return value;
+}
+
+void display(Queue* queue) {
+    if (isEmpty(queue)) {
+        printf("Queue is empty\n");
+        return;
+    }
+    Node* current = queue->front;
+    while (current != NULL) {
+        printf("%d ", current->data);
+        current = current->next;
+    }
+    printf("\n");
+}
+
+void freeQueue(Queue* queue) {
+    while (!isEmpty(queue)) {
+        dequeue(queue);
+    }
+    free(queue);
+}
+
+int main() {
+    Queue* queue = createQueue();
+    int choice, value;
+
+    while (1) {
+        printf("1. Enqueue\n2. Dequeue\n3. Display\n4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter value to enqueue: ");
+                scanf("%d", &value);
+                enqueue(queue, value);
+                break;
+            case 2:
+                value = dequeue(queue);
+                if (value != -1) {
+                    printf("Dequeued value: %d\n", value);
+                }
+                break;
+            case 3:
+                printf("Queue elements: ");
+                display(queue);
+                break;
+            case 4:
+                freeQueue(queue);
+                return 0;
+            default:
+                printf("Invalid choice\n");
+        }
+    }
+}
+
+
+#implementation os tower of hanoi using stack queue
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct Node {
+    int data;
+    struct Node* next;
+} Node;
+
+typedef struct Stack {
+    Node* top;
+} Stack;
+
+Stack* createStack() {
+    Stack* stack = (Stack*)malloc(sizeof(Stack));
+    stack->top = NULL;
+    return stack;
+}
+
+int isEmpty(Stack* stack) {
+    return stack->top == NULL;
+}
+
+void push(Stack* stack, int value) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->data = value;
+    newNode->next = stack->top;
+    stack->top = newNode;
+}
+
+int pop(Stack* stack) {
+    if (isEmpty(stack)) {
+        return -1;
+    }
+    Node* temp = stack->top;
+    int poppedValue = temp->data;
+    stack->top = stack->top->next;
+    free(temp);
+    return poppedValue;
+}
+
+void moveDisk(Stack* source, Stack* destination, char s, char d) {
+    int disk = pop(source);
+    push(destination, disk);
+    printf("Move disk %d from %c to %c\n", disk, s, d);
+}
+
+void hanoi(int n, Stack* source, Stack* destination, Stack* auxiliary, char s, char d, char a) {
+    if (n == 1) {
+        moveDisk(source, destination, s, d);
+        return;
+    }
+    hanoi(n - 1, source, auxiliary, destination, s, a, d);
+    moveDisk(source, destination, s, d);
+    hanoi(n - 1, auxiliary, destination, source, a, d, s);
+}
+
+int main() {
+    int n;
+    printf("Enter the number of disks: ");
+    scanf("%d", &n);
+    
+    Stack* source = createStack();
+    Stack* destination = createStack();
+    Stack* auxiliary = createStack();
+
+    for (int i = n; i >= 1; i--) {
+        push(source, i);
+    }
+
+    hanoi(n, source, destination, auxiliary, 'A', 'C', 'B');
+
+    free(source);
+    free(destination);
+    free(auxiliary);
+    return 0;
+}
+
+
+#conversion of infix to postfix using stack and queue
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+typedef struct Node {
+    char data;
+    struct Node* next;
+} Node;
+
+typedef struct Stack {
+    Node* top;
+} Stack;
+
+typedef struct Queue {
+    Node* front;
+    Node* rear;
+} Queue;
+
+Stack* createStack() {
+    Stack* stack = (Stack*)malloc(sizeof(Stack));
+    stack->top = NULL;
+    return stack;
+}
+
+Queue* createQueue() {
+    Queue* queue = (Queue*)malloc(sizeof(Queue));
+    queue->front = NULL;
+    queue->rear = NULL;
+    return queue;
+}
+
+int isEmptyStack(Stack* stack) {
+    return stack->top == NULL;
+}
+
+int isEmptyQueue(Queue* queue) {
+    return queue->front == NULL;
+}
+
+void push(Stack* stack, char value) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->data = value;
+    newNode->next = stack->top;
+    stack->top = newNode;
+}
+
+char pop(Stack* stack) {
+    if (isEmptyStack(stack)) return '\0';
+    Node* temp = stack->top;
+    char poppedValue = temp->data;
+    stack->top = stack->top->next;
+    free(temp);
+    return poppedValue;
+}
+
+char peek(Stack* stack) {
+    return stack->top->data;
+}
+
+void enqueue(Queue* queue, char value) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->data = value;
+    newNode->next = NULL;
+    if (isEmptyQueue(queue)) {
+        queue->front = queue->rear = newNode;
+    } else {
+        queue->rear->next = newNode;
+        queue->rear = newNode;
+    }
+}
+
+void dequeue(Queue* queue, char* value) {
+    if (isEmptyQueue(queue)) return;
+    Node* temp = queue->front;
+    *value = temp->data;
+    queue->front = queue->front->next;
+    if (queue->front == NULL) {
+        queue->rear = NULL;
+    }
+    free(temp);
+}
+
+int precedence(char op) {
+    if (op == '+' || op == '-') return 1;
+    if (op == '*' || op == '/') return 2;
+    return 0;
+}
+
+void infixToPostfix(char* infix, Queue* queue) {
+    Stack* stack = createStack();
+    for (int i = 0; i < strlen(infix); i++) {
+        if (isalnum(infix[i])) {
+            enqueue(queue, infix[i]);
+        } else if (infix[i] == '(') {
+            push(stack, infix[i]);
+        } else if (infix[i] == ')') {
+            while (!isEmptyStack(stack) && peek(stack) != '(') {
+                enqueue(queue, pop(stack));
+            }
+            pop(stack);
+        } else {
+            while (!isEmptyStack(stack) && precedence(peek(stack)) >= precedence(infix[i])) {
+                enqueue(queue, pop(stack));
+            }
+            push(stack, infix[i]);
+        }
+    }
+    while (!isEmptyStack(stack)) {
+        enqueue(queue, pop(stack));
+    }
+    free(stack);
+}
+
+void displayQueue(Queue* queue) {
+    Node* current = queue->front;
+    while (current != NULL) {
+        printf("%c", current->data);
+        current = current->next;
+    }
+    printf("\n");
+}
+
+int main() {
+    char infix[] = "A+B*C-(D/E^F)*G"; // Hardcoded infix expression
+    Queue* queue = createQueue();
+    infixToPostfix(infix, queue);
+    printf("Postfix expression: ");
+    displayQueue(queue);
+    free(queue);
+    return 0;
+}
+
+
+#implemention of process shedulling in stack and queue
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct Process {
+    int id;
+    int burstTime;
+    int waitingTime;
+} Process;
+
+typedef struct Node {
+    Process process;
+    struct Node* next;
+} Node;
+
+typedef struct Queue {
+    Node* front;
+    Node* rear;
+} Queue;
+
+typedef struct Stack {
+    Node* top;
+} Stack;
+
+Queue* createQueue() {
+    Queue* queue = (Queue*)malloc(sizeof(Queue));
+    queue->front = NULL;
+    queue->rear = NULL;
+    return queue;
+}
+
+Stack* createStack() {
+    Stack* stack = (Stack*)malloc(sizeof(Stack));
+    stack->top = NULL;
+    return stack;
+}
+
+int isEmptyQueue(Queue* queue) {
+    return queue->front == NULL;
+}
+
+int isEmptyStack(Stack* stack) {
+    return stack->top == NULL;
+}
+
+void enqueue(Queue* queue, Process process) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->process = process;
+    newNode->next = NULL;
+    if (isEmptyQueue(queue)) {
+        queue->front = queue->rear = newNode;
+    } else {
+        queue->rear->next = newNode;
+        queue->rear = newNode;
+    }
+}
+
+Process dequeue(Queue* queue) {
+    Process process = {0, 0, 0};
+    if (isEmptyQueue(queue)) return process;
+    Node* temp = queue->front;
+    process = temp->process;
+    queue->front = queue->front->next;
+    if (queue->front == NULL) {
+        queue->rear = NULL;
+    }
+    free(temp);
+    return process;
+}
+
+void push(Stack* stack, Process process) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->process = process;
+    newNode->next = stack->top;
+    stack->top = newNode;
+}
+
+Process pop(Stack* stack) {
+    Process process = {0, 0, 0};
+    if (isEmptyStack(stack)) return process;
+    Node* temp = stack->top;
+    process = temp->process;
+    stack->top = stack->top->next;
+    free(temp);
+    return process;
+}
+
+void calculateWaitingTime(Queue* queue) {
+    int totalWaitingTime = 0;
+    Node* current = queue->front;
+    while (current != NULL) {
+        current->process.waitingTime = totalWaitingTime;
+        totalWaitingTime += current->process.burstTime;
+        current = current->next;
+    }
+}
+
+void displayProcesses(Queue* queue) {
+    Node* current = queue->front;
+    while (current != NULL) {
+        printf("Process ID: %d, Burst Time: %d, Waiting Time: %d\n", current->process.id, current->process.burstTime, current->process.waitingTime);
+        current = current->next;
+    }
+}
+
+int main() {
+    Process processes[] = {
+        {1, 5, 0},
+        {2, 3, 0},
+        {3, 8, 0},
+        {4, 6, 0}
+    };
+
+    Queue* queue = createQueue();
+    for (int i = 0; i < 4; i++) {
+        enqueue(queue, processes[i]);
+    }
+
+    calculateWaitingTime(queue);
+    displayProcesses(queue);
+
+    Stack* stack = createStack();
+    while (!isEmptyQueue(queue)) {
+        push(stack, dequeue(queue));
+    }
+
+    printf("\nProcesses in stack (LIFO order):\n");
+    while (!isEmptyStack(stack)) {
+        Process process = pop(stack);
+        printf("Process ID: %d, Burst Time: %d, Waiting Time: %d\n", process.id, process.burstTime, process.waitingTime);
+    }
+
+    free(queue);
+    free(stack);
+    return 0;
+}
